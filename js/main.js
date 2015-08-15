@@ -8,7 +8,7 @@ var Game = function(canvasID) {
   this.currentPiece;
   for (var i = 0; i < this.pieces.length; i++) {
     if (this.pieces[i].current) {
-        this.currentPiece = this.pieces[i];
+      this.currentPiece = this.pieces[i];
     }
   }
   this.currentBlock = this.currentPiece.block;
@@ -31,6 +31,12 @@ var Game = function(canvasID) {
 
 Game.prototype = {
   update: function() {
+    //set the current piece each update
+    for (var i = 0; i < this.pieces.length; i++) {
+      if (this.pieces[i].current) {
+        this.currentPiece = this.pieces[i];
+      }
+    }
     var block = this.currentBlock;
     var sizeX = this.currentPiece.size.x;
     var sizeY = this.currentPiece.size.y;
@@ -51,7 +57,8 @@ Game.prototype = {
     if (this.checkCollision()) {
       this.currentPiece.speed = 0;
       this.currentPiece.current = false;
-      this.locked.push(this.pieces)
+      this.currentPiece.currentPositionArray = this.currentlyFilled;
+      this.locked.push([this.currentPiece])
       createTetromino(this);
     }
 
@@ -78,19 +85,33 @@ Game.prototype = {
     this.currentlyFilled = [];
 
     //draw pieces that are on the board
-    for (var r = 0; r < this.locked.length; r++) {
-      for (var c = 0; c < this.locked[r].length; c++) {
-        screen.fillStyle = block.color;
-        screen.beginPath();
-        var x = this.locked[r][c][0];
-        var y = this.locked[r][c][1];
-        screen.rect(x, y, sizeX, sizeY);
-        screen.closePath();
-        screen.fill();
-        this.currentlyFilled.push([x, y, x + sizeX, y + sizeY])
+    // for (var r = 0; r < this.locked.length; r++) {
+    //   for (var c = 0; c < this.locked[r].length; c++) {
+    //     screen.fillStyle = block.color;
+    //     screen.beginPath();
+    //     var x = this.locked.position.x;
+    //     var y = this.locked[];
+    //     screen.rect(x, y, sizeX, sizeY);
+    //     screen.closePath();
+    //     screen.fill();
+    //     this.currentlyFilled.push([x, y, x + sizeX, y + sizeY])
+    //   }
+    // }
+    if (this.locked.length > 0) {
+      for (var j = 0; j < this.locked[0].length; j++) {
+        for (var k = 0; k < 4; k++) {
+          screen.fillStyle = this.locked[0][j].color;
+          screen.beginPath();
+          var sizeX = this.locked[0][j].size.x;
+          var sizeY = this.locked[0][j].size.y;
+          var x = this.locked[0][j].currentPositionArray[k][0];
+          var y = this.locked[0][j].currentPositionArray[k][1];
+          screen.rect(x, y, sizeX, sizeY);
+          screen.closePath();
+          screen.fill();
+        }
       }
     }
-
   },
 
   checkCollision: function() {
