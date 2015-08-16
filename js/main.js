@@ -3,27 +3,46 @@ var Game = function(canvasID) {
   var canvas = document.getElementById("screen");
   var screen = canvas.getContext("2d");
   var gameSize = { x: canvas.width, y: canvas.height }
+
+  //addEventListener to window for keypress to move each tetris piece.
   window.addEventListener("keydown", movePiece, false);
   function movePiece(e) {
-      switch(e.keyCode) {
-          case 37:
-              self.currentPiece.position.x -= 1;
-              break;
-          case 38:
-              //rotate the tetrominoes state
+    var currentPositionArray = self.currentPiece.currentPositionArray
+    var counter = 0;
 
-              break;
-          case 39:
-              self.currentPiece.position.x += 1;
-              break;
-          case 40:
-              self.currentPiece.position.y += 1;
-              break;
+    //added a switch that checks the x position of each block to make sure it is within the width of the canvas
+    switch(e.keyCode) {
+      case 37:
+      for (var i = 0; i < currentPositionArray.length; i++) {
+        if (currentPositionArray[i][0] > 0) {
+          counter++;
+        }
       }
+      if (counter === 4) {
+        self.currentPiece.position.x--;
+      }
+      break;
+      case 38:
+      //rotate the tetrominoes state
+
+      break;
+      case 39:
+      for (var i = 0; i < currentPositionArray.length; i++) {
+        if (currentPositionArray[i][0] + 30 < gameSize.x) {
+          counter++;
+        }
+      }
+      if (counter === 4) {
+        self.currentPiece.position.x++;
+      }
+      break;
+      case 40:
+      self.currentPiece.position.y++;
+      break;
+    }
   }
 
   this.pieces = [new Tetrominoes()];
-  // this.keyboarder = new Keyboarder();
   this.currentPiece = this.pieces[0];
   this.currentBlock = this.currentPiece.block;
   this.locked = [];
@@ -34,7 +53,6 @@ var Game = function(canvasID) {
   //function to run the game at 60 FPS
   var tick = function() {
     self.update();
-    // self.move();
     self.draw(screen);
     self.grid(30, "black", canvas, screen);
     requestAnimationFrame(tick);
