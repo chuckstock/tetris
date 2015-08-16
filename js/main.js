@@ -3,8 +3,27 @@ var Game = function(canvasID) {
   var canvas = document.getElementById("screen");
   var screen = canvas.getContext("2d");
   var gameSize = { x: canvas.width, y: canvas.height }
+  window.addEventListener("keydown", movePiece, false);
+  function movePiece(e) {
+      switch(e.keyCode) {
+          case 37:
+              self.currentPiece.position.x -= 1;
+              break;
+          case 38:
+              //rotate the tetrominoes state
+
+              break;
+          case 39:
+              self.currentPiece.position.x += 1;
+              break;
+          case 40:
+              self.currentPiece.position.y += 1;
+              break;
+      }
+  }
 
   this.pieces = [new Tetrominoes()];
+  // this.keyboarder = new Keyboarder();
   this.currentPiece = this.pieces[0];
   this.currentBlock = this.currentPiece.block;
   this.locked = [];
@@ -15,13 +34,20 @@ var Game = function(canvasID) {
   //function to run the game at 60 FPS
   var tick = function() {
     self.update();
+    // self.move();
     self.draw(screen);
     self.grid(30, "black", canvas, screen);
+    requestAnimationFrame(tick);
+  }
 
+  //function to move tetromino down at a consistent pace.
+  var down = function () {
+    self.currentPiece.update();
   }
 
   //intertval to move the tetromino down one space every 750ms
-  setInterval(tick, 50);
+  setInterval(down, 500);
+  tick();
 }
 
 Game.prototype = {
@@ -38,7 +64,7 @@ Game.prototype = {
     var sizeY = this.currentPiece.size.y;
 
     //update the block to redraw it as it moves down the frame
-    this.currentPiece.update();
+    // this.currentPiece.update();
 
     //update nextPosition blocks
     for (var r = 0; r < block.matrix.length; r++) {
@@ -54,14 +80,15 @@ Game.prototype = {
     //set the currentPostionArray of the CurrentPiece to what is currently filled;
     // this.currentPiece.currentPositionArray = this.nextPosition;
 
-    //check to see if the bodies are colliding with anything.
+    //if there is no current piece, make the current position equal to the next position
     if (this.currentPiece.currentPositionArray.length === 0) {
       this.currentPiece.currentPositionArray = this.nextPosition;
 
+      //check to see if the next position array is colliding with the floor or any locked pieces.
+      //if checkcollision returns true. then lock the speed and push the current piece into the locked piece array.
     } else if (this.checkCollision()) {
       this.currentPiece.speed = 0;
       this.currentPiece.current = false;
-      // this.currentPiece.currentPositionArray = this.nextPosition;
       this.locked.push([this.currentPiece])
       createTetromino(this);
     } else {
@@ -109,28 +136,31 @@ Game.prototype = {
   },
 
   checkCollision: function() {
-    if (this.locked.length === 0) {
+    if (this.nextPosition[3][3] > 600) {
       //check for collision with bottom of frame
-      //only need to check the the y position of the last block in innextPosition
-      return (this.nextPosition[3][3] > 600);
+      //only need to check the the y position of the last block in nextPosition
+      return true;
     } else {
+      //check the nextposition array to see if any of the blocks of the current piece are colliding with any pieces in the locked array.
       var collidingCounter = 0;
       for (var k = 0; k < this.nextPosition.length; k++) {
         for (var i = 0; i < this.locked.length; i++) {
           for (var j = 0; j < 4; j++) {
             if(colliding(this.nextPosition[k], this.locked[i][0].currentPositionArray[j])) {
+              //add one too colliding counter if the colliding function returns true
               collidingCounter++;
             }
           }
         }
       }
+      //if any pieces are collding than checkCollision will return true
       if(collidingCounter !== 0) {
         return true;
       }
     }
   },
 
-
+  //draw the grid for the background of the game
   grid: function(pixelSize, color, canvas, screen) {
     // screen.clearRect(0, 0, 300, 600);
     screen.save();
@@ -158,31 +188,32 @@ Game.prototype = {
   }
 }
 
+//class constructor for each tetromino
 var Tetrominoes = function() {
   var random = Math.floor(Math.random() * blocks.length);
   this.block = blocks[random];
   this.position = {x: 3, y: -4};
   this.size = {x: 30, y: 30};
   this.currentPositionArray = [];
-  this.center = {x: this.position.x * this.size.x + this.size.x / 2, y: this.position.y * this.size.y + this.size.y / 2};
   this.speed = 1;
   this.current = true;
-
 }
+
 
 Tetrominoes.prototype = {
+  //update the y position of the tetromino for each tick of the game
   update: function() {
     this.position.y += this.speed;
-    this.center = {x: this.position.x * this.size.x + this.size.x / 2, y: this.position.y * this.size.y + this.size.y / 2};
   }
-
 }
 
+//create a new tetromino and push it into the pieces array for the game
 var createTetromino = function(game) {
   var newPiece = new Tetrominoes();
   game.pieces.push(newPiece);
 }
 
+//function to check two boddies are colliding will only return true of all 5 of the condition are false
 var colliding = function(b1, b2) {
   return !(
     b1 === b2 ||
@@ -193,6 +224,10 @@ var colliding = function(b1, b2) {
   );
 };
 
+
+
+
+//all the blocks with their colors and a 4x4 matrix of what they look like
 var blocks = [
   {
     name: "O",
