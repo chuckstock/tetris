@@ -8,7 +8,7 @@ var Game = function(canvasID) {
   this.currentPiece = this.pieces[0];
   this.currentBlock = this.currentPiece.block;
   this.locked = [];
-  this.currentlyFilled = [];
+  this.nextPosition = [];
 
   var self = this;
 
@@ -40,27 +40,32 @@ Game.prototype = {
     //update the block to redraw it as it moves down the frame
     this.currentPiece.update();
 
-    //update currentlyFilled blocks
+    //update nextPosition blocks
     for (var r = 0; r < block.matrix.length; r++) {
       for (var c = 0; c < block.matrix[r].length; c++) {
         if (block.matrix[r][c]) {
           var x = (this.currentPiece.position.x + c) * sizeX;
           var y = (this.currentPiece.position.y + r) * sizeY;
-          this.currentlyFilled.push([x, y, x + sizeX, y + sizeY]);
+          this.nextPosition.push([x, y, x + sizeX, y + sizeY]);
         }
       }
     }
 
     //set the currentPostionArray of the CurrentPiece to what is currently filled;
-    this.currentPiece.currentPositionArray = this.currentlyFilled;
+    // this.currentPiece.currentPositionArray = this.nextPosition;
 
     //check to see if the bodies are colliding with anything.
-    if (this.checkCollision()) {
+    if (this.currentPiece.currentPositionArray.length === 0) {
+      this.currentPiece.currentPositionArray = this.nextPosition;
+
+    } else if (this.checkCollision()) {
       this.currentPiece.speed = 0;
       this.currentPiece.current = false;
-      this.currentPiece.currentPositionArray = this.currentlyFilled;
+      // this.currentPiece.currentPositionArray = this.nextPosition;
       this.locked.push([this.currentPiece])
       createTetromino(this);
+    } else {
+      this.currentPiece.currentPositionArray = this.nextPosition;
     }
 
   },
@@ -73,28 +78,28 @@ Game.prototype = {
     var center = {};
 
     //draw piece currently falling from top
-    //empty the currentlyFilledArray when done
-    for (var i = 0; i < this.currentlyFilled.length; i++) {
+    //empty the nextPositionArray when done
+    for (var i = 0; i < this.currentPiece.currentPositionArray.length; i++) {
       screen.beginPath();
       screen.fillStyle = block.color;
-      var x = this.currentlyFilled[i][0];
-      var y = this.currentlyFilled[i][1];
+      var x = this.currentPiece.currentPositionArray[i][0];
+      var y = this.currentPiece.currentPositionArray[i][1];
       screen.rect(x, y, sizeX, sizeY);
       screen.closePath();
       screen.fill();
     }
-    this.currentlyFilled = [];
+    this.nextPosition = [];
 
     //draw the tetrominoes that are in the locked array
     if (this.locked.length > 0) {
-      for (var j = 0; j < this.locked[0].length; j++) {
+      for (var j = 0; j < this.locked.length; j++) {
         for (var k = 0; k < 4; k++) {
-          screen.fillStyle = this.locked[0][j].block.color;
+          screen.fillStyle = this.locked[j][0].block.color;
           screen.beginPath();
-          var sizeX = this.locked[0][j].size.x;
-          var sizeY = this.locked[0][j].size.y;
-          var x = this.locked[0][j].currentPositionArray[k][0];
-          var y = this.locked[0][j].currentPositionArray[k][1];
+          var sizeX = this.locked[j][0].size.x;
+          var sizeY = this.locked[j][0].size.y;
+          var x = this.locked[j][0].currentPositionArray[k][0];
+          var y = this.locked[j][0].currentPositionArray[k][1];
           screen.rect(x, y, sizeX, sizeY);
           screen.closePath();
           screen.fill();
@@ -106,14 +111,14 @@ Game.prototype = {
   checkCollision: function() {
     if (this.locked.length === 0) {
       //check for collision with bottom of frame
-      //only need to check the the y position of the last block in in currentlyFilled
-      return (this.currentlyFilled[3][3] >= 600);
+      //only need to check the the y position of the last block in innextPosition
+      return (this.nextPosition[3][3] > 600);
     } else {
       var collidingCounter = 0;
-      for (var k = 0; k < this.currentPiece.currentPositionArray.length; k++) {
-        for (var i = 0; i < this.locked[0].length; i++) {
+      for (var k = 0; k < this.nextPosition.length; k++) {
+        for (var i = 0; i < this.locked.length; i++) {
           for (var j = 0; j < 4; j++) {
-            if(colliding(this.currentPiece.currentPositionArray[k], this.locked[0][i].currentPositionArray[j])) {
+            if(colliding(this.nextPosition[k], this.locked[i][0].currentPositionArray[j])) {
               collidingCounter++;
             }
           }
@@ -158,7 +163,7 @@ var Tetrominoes = function() {
   this.block = blocks[random];
   this.position = {x: 3, y: -4};
   this.size = {x: 30, y: 30};
-  this.currentPositionArray;
+  this.currentPositionArray = [];
   this.center = {x: this.position.x * this.size.x + this.size.x / 2, y: this.position.y * this.size.y + this.size.y / 2};
   this.speed = 1;
   this.current = true;
@@ -181,13 +186,10 @@ var createTetromino = function(game) {
 var colliding = function(b1, b2) {
   return !(
     b1 === b2 ||
-    b1[0] + 30 < b2[0] - 30  ||
-    b1[1] + 30 < b2[1] - 30  ||
-    b1[0] - 30 > b2[0] - 30  ||
-    b1[1] - 30 < b2[1] - 30
-    // b1[0] + b1.size.y / 2 < b2[1] - b1.size.y / 2  ||
-    // b1.center.x - b1.size.x / 2 > b2[0] + b1.size.x / 2  ||
-    // b1.center.y - b1.size.y / 2 > b2[1] + b1.size.y / 2
+    b1[0] + 30 <= b2[0]  ||
+    b1[1] + 30 <= b2[1]  ||
+    b1[0] >= b2[0] + 30  ||
+    b1[1] >= b2[1] + 30
   );
 };
 
