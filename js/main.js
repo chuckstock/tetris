@@ -36,6 +36,7 @@ Game.prototype = {
     var block = this.currentBlock;
     var sizeX = this.currentPiece.size.x;
     var sizeY = this.currentPiece.size.y;
+
     //update the block to redraw it as it moves down the frame
     this.currentPiece.update();
 
@@ -49,6 +50,10 @@ Game.prototype = {
         }
       }
     }
+
+    //set the currentPostionArray of the CurrentPiece to what is currently filled;
+    this.currentPiece.currentPositionArray = this.currentlyFilled;
+
     //check to see if the bodies are colliding with anything.
     if (this.checkCollision()) {
       this.currentPiece.speed = 0;
@@ -70,8 +75,8 @@ Game.prototype = {
     //draw piece currently falling from top
     //empty the currentlyFilledArray when done
     for (var i = 0; i < this.currentlyFilled.length; i++) {
-      screen.fillStyle = block.color;
       screen.beginPath();
+      screen.fillStyle = block.color;
       var x = this.currentlyFilled[i][0];
       var y = this.currentlyFilled[i][1];
       screen.rect(x, y, sizeX, sizeY);
@@ -84,7 +89,7 @@ Game.prototype = {
     if (this.locked.length > 0) {
       for (var j = 0; j < this.locked[0].length; j++) {
         for (var k = 0; k < 4; k++) {
-          screen.fillStyle = this.locked[0][j].color;
+          screen.fillStyle = this.locked[0][j].block.color;
           screen.beginPath();
           var sizeX = this.locked[0][j].size.x;
           var sizeY = this.locked[0][j].size.y;
@@ -104,8 +109,18 @@ Game.prototype = {
       //only need to check the the y position of the last block in in currentlyFilled
       return (this.currentlyFilled[3][3] >= 600);
     } else {
-      for (var i = 0; i < this.locked[0].length; i++) {
-        colliding(this.currentPiece, this.locked[0][i])
+      var collidingCounter = 0;
+      for (var k = 0; k < this.currentPiece.currentPositionArray.length; k++) {
+        for (var i = 0; i < this.locked[0].length; i++) {
+          for (var j = 0; j < 4; j++) {
+            if(colliding(this.currentPiece.currentPositionArray[k], this.locked[0][i].currentPositionArray[j])) {
+              collidingCounter++;
+            }
+          }
+        }
+      }
+      if(collidingCounter !== 0) {
+        return true;
       }
     }
   },
@@ -143,7 +158,8 @@ var Tetrominoes = function() {
   this.block = blocks[random];
   this.position = {x: 3, y: -4};
   this.size = {x: 30, y: 30};
-  this.center = {x: this.position.x + this.size.x / 2, y: this.position.y + this.size.y / 2};
+  this.currentPositionArray;
+  this.center = {x: this.position.x * this.size.x + this.size.x / 2, y: this.position.y * this.size.y + this.size.y / 2};
   this.speed = 1;
   this.current = true;
 
@@ -152,6 +168,7 @@ var Tetrominoes = function() {
 Tetrominoes.prototype = {
   update: function() {
     this.position.y += this.speed;
+    this.center = {x: this.position.x * this.size.x + this.size.x / 2, y: this.position.y * this.size.y + this.size.y / 2};
   }
 
 }
@@ -164,10 +181,13 @@ var createTetromino = function(game) {
 var colliding = function(b1, b2) {
   return !(
     b1 === b2 ||
-    b1.center.x + b1.size.x / 2 < b2.center.x - b2.size.x / 2  ||
-    b1.center.y + b1.size.y / 2 < b2.center.y - b2.size.y / 2  ||
-    b1.center.x - b1.size.x / 2 > b2.center.x + b2.size.x / 2  ||
-    b1.center.y - b1.size.y / 2 > b2.center.y + b2.size.y / 2
+    b1[0] + 30 < b2[0] - 30  ||
+    b1[1] + 30 < b2[1] - 30  ||
+    b1[0] - 30 > b2[0] - 30  ||
+    b1[1] - 30 < b2[1] - 30
+    // b1[0] + b1.size.y / 2 < b2[1] - b1.size.y / 2  ||
+    // b1.center.x - b1.size.x / 2 > b2[0] + b1.size.x / 2  ||
+    // b1.center.y - b1.size.y / 2 > b2[1] + b1.size.y / 2
   );
 };
 
