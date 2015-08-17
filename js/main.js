@@ -1,4 +1,5 @@
 //Game class constructor that will be used to run the game and pull in data for all aspects of tetris
+var stateNumber = 0;
 var Game = function(canvasID) {
   var canvas = document.getElementById("screen");
   var screen = canvas.getContext("2d");
@@ -27,8 +28,11 @@ var Game = function(canvasID) {
 
       //rotate the current piece on up arrow key press
       case 38:
-      //rotate the tetrominoes state
-
+      stateNumber++;
+      if (self.currentPiece.states[stateNumber] === undefined) {
+        stateNumber = 0;
+      }
+      self.currentState = self.currentPiece.states[stateNumber];
       break;
 
       //move the current piece right on right arrow key press
@@ -50,9 +54,12 @@ var Game = function(canvasID) {
     }
   }
 
+
   this.pieces = [new Tetrominoes()];
   this.currentPiece = this.pieces[0];
   this.currentBlock = this.currentPiece.block;
+  this.stateNumber = this.currentPiece.stateNumber;
+  this.currentState = this.currentPiece.currentState;
   this.locked = [];
   this.nextPosition = [];
   this.fullRows = [];
@@ -62,8 +69,7 @@ var Game = function(canvasID) {
   //function to run the game at 60 FPS
   var tick = function() {
     self.update();
-    self.checkLines(gameSize);
-    self.removeFullLines();
+
     if (self.checkLoss(screen)) {
       cancelAnimationFrame(tick);
       screen.clearRect(0, 0, gameSize.x, gameSize.y)
@@ -79,11 +85,13 @@ var Game = function(canvasID) {
 
   //function to move tetromino down at a consistent pace.
   var down = function () {
+    self.checkLines(gameSize);
+    self.removeFullLines();
     self.currentPiece.update();
   }
 
   //intertval to move the tetromino down one space every 750ms
-  setInterval(down, 400);
+  setInterval(down, 200);
   tick();
 }
 
@@ -97,6 +105,7 @@ Game.prototype = {
     }
     this.currentBlock = this.currentPiece.block;
     var block = this.currentBlock;
+    var state = this.currentPiece.states[stateNumber];
     var sizeX = this.currentPiece.size.x;
     var sizeY = this.currentPiece.size.y;
 
@@ -104,18 +113,15 @@ Game.prototype = {
     // this.currentPiece.update();
 
     //update nextPosition blocks
-    for (var r = 0; r < block.matrix.length; r++) {
-      for (var c = 0; c < block.matrix[r].length; c++) {
-        if (block.matrix[r][c]) {
+    for (var r = 0; r < state.length; r++) {
+      for (var c = 0; c < state[r].length; c++) {
+        if (state[r][c]) {
           var x = (this.currentPiece.position.x + c) * sizeX;
           var y = (this.currentPiece.position.y + r) * sizeY;
           this.nextPosition.push([x, y, x + sizeX, y + sizeY]);
         }
       }
     }
-
-    //set the currentPostionArray of the CurrentPiece to what is currently filled;
-    // this.currentPiece.currentPositionArray = this.nextPosition;
 
     //if there is no current piece, make the current position equal to the next position
     if (this.currentPiece.currentPositionArray.length === 0) {
@@ -127,6 +133,7 @@ Game.prototype = {
       this.currentPiece.speed = 0;
       this.currentPiece.current = false;
       this.locked.push([this.currentPiece])
+      stateNumber = 0;
       createTetromino(this);
     } else {
       this.currentPiece.currentPositionArray = this.nextPosition;
@@ -278,6 +285,9 @@ var Tetrominoes = function() {
   this.size = {x: 30, y: 30};
   this.currentPositionArray = [];
   this.speed = 1;
+  this.stateNumber = 0;
+  this.states = this.block.states;
+  this.currentState = this.block.states[this.stateNumber];
   this.current = true;
 }
 
@@ -293,6 +303,7 @@ Tetrominoes.prototype = {
 var createTetromino = function(game) {
   var newPiece = new Tetrominoes();
   game.pieces.push(newPiece);
+
 }
 
 //function to check two boddies are colliding will only return true of all 5 of the condition are false
@@ -313,82 +324,160 @@ var colliding = function(b1, b2) {
 var blocks = [
   {
     name: "O",
-    matrix: [
-      [0, 0, 0, 0],
-      [0, 1, 1, 0],
-      [0, 1, 1, 0],
-      [0, 0, 0, 0]
+    states: [
+      [
+        [0, 0, 0, 0],
+        [0, 1, 1, 0],
+        [0, 1, 1, 0],
+        [0, 0, 0, 0]
+      ]
     ],
     color: "yellow"
   },
   {
     name: "I",
-    matrix: [
-      [0, 0, 0, 0],
-      [1, 1, 1, 1],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0]
+    states: [
+      [
+        [0, 0, 0, 0],
+        [1, 1, 1, 1],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0]
+      ],
+      [
+        [0, 1, 0, 0],
+        [0, 1, 0, 0],
+        [0, 1, 0, 0],
+        [0, 1, 0, 0]
+      ]
     ],
-    // state2: [
-    //   [0, 1, 0, 0],
-    //   [0, 1, 0, 0],
-    //   [0, 1, 0, 0],
-    //   [0, 1, 0, 0]
-    // ],
-    // states: [state1, state2],
     color: "cyan"
   },
   {
     name: "T",
-    matrix: [
-      [0, 0, 0, 0],
-      [1, 1, 1, 0],
-      [0, 1, 0, 0],
-      [0, 0, 0, 0]
+    states: [
+      [
+        [0, 0, 0, 0],
+        [1, 1, 1, 0],
+        [0, 1, 0, 0],
+        [0, 0, 0, 0]
+      ],
+      [
+        [0, 1, 0, 0],
+        [1, 1, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 0, 0]
+      ],
+      [
+        [0, 1, 0, 0],
+        [1, 1, 1, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0]
+      ],
+      [
+        [0, 1, 0, 0],
+        [0, 1, 1, 0],
+        [0, 1, 0, 0],
+        [0, 0, 0, 0]
+      ]
     ],
     color: "purple"
   },
   {
     name: "S",
-    matrix: [
-      [0, 0, 0, 0],
-      [0, 1, 1, 0],
-      [1, 1, 0, 0],
-      [0, 0, 0, 0]
+    states: [
+      [
+        [0, 0, 0, 0],
+        [0, 1, 1, 0],
+        [1, 1, 0, 0],
+        [0, 0, 0, 0]
+      ],
+      [
+        [0, 1, 0, 0],
+        [0, 1, 1, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 0]
+      ]
     ],
     color: "green"
   },
   {
     name: "Z",
-    matrix: [
-      [0, 0, 0, 0],
-      [1, 1, 0, 0],
-      [0, 1, 1, 0],
-      [0, 0, 0, 0]
+    states: [
+      [
+        [0, 0, 0, 0],
+        [1, 1, 0, 0],
+        [0, 1, 1, 0],
+        [0, 0, 0, 0]
+      ],
+      [
+        [0, 1, 0, 0],
+        [1, 1, 0, 0],
+        [1, 0, 0, 0],
+        [0, 0, 0, 0]
+      ]
     ],
     color: "red"
   },
   {
     name: "J",
-    matrix: [
-      [0, 0, 1, 0],
-      [0, 0, 1, 0],
-      [0, 1, 1, 0],
-      [0, 0, 0, 0]
+    states: [
+      [
+        [0, 0, 1, 0],
+        [0, 0, 1, 0],
+        [0, 1, 1, 0],
+        [0, 0, 0, 0]
+      ],
+      [
+        [0, 0, 0, 0],
+        [1, 0, 0, 0],
+        [1, 1, 1, 0],
+        [0, 0, 0, 0]
+      ],
+      [
+        [1, 1, 0, 0],
+        [1, 0, 0, 0],
+        [1, 0, 0, 0],
+        [0, 0, 0, 0]
+      ],
+      [
+        [1, 1, 1, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0]
+      ]
     ],
     color: "blue"
   },
   {
     name: "L",
-    matrix: [
-      [0, 1, 0, 0],
-      [0, 1, 0, 0],
-      [0, 1, 1, 0],
-      [0, 0, 0, 0]
+    states:[
+      [
+        [0, 1, 0, 0],
+        [0, 1, 0, 0],
+        [0, 1, 1, 0],
+        [0, 0, 0, 0]
+      ],
+      [
+        [0, 1, 1, 1],
+        [0, 1, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0]
+      ],
+      [
+        [0, 0, 1, 1],
+        [0, 0, 0, 1],
+        [0, 0, 0, 1],
+        [0, 0, 0, 0]
+      ],
+      [
+        [0, 0, 0, 0],
+        [0, 0, 0, 1],
+        [0, 1, 1, 1],
+        [0, 0, 0, 0]
+      ]
     ],
     color: "orange"
   },
-
 ]
 
 
