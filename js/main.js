@@ -64,10 +64,17 @@ var Game = function(canvasID) {
     self.update();
     self.checkLines(gameSize);
     self.removeFullLines();
-    // self.checkLoss(screen);
-    self.draw(screen);
-    self.grid(30, "black", canvas, screen);
-    requestAnimationFrame(tick);
+    if (self.checkLoss(screen)) {
+      cancelAnimationFrame(tick);
+      screen.clearRect(0, 0, gameSize.x, gameSize.y)
+      var gameOver = "images/over.png";
+      $('canvas').css("background-image", "url(" + gameOver + ")");
+
+    } else {
+      self.draw(screen);
+      self.grid(30, "black", canvas, screen);
+      requestAnimationFrame(tick);
+    }
   }
 
   //function to move tetromino down at a consistent pace.
@@ -76,7 +83,7 @@ var Game = function(canvasID) {
   }
 
   //intertval to move the tetromino down one space every 750ms
-  setInterval(down, 500);
+  setInterval(down, 400);
   tick();
 }
 
@@ -225,19 +232,15 @@ Game.prototype = {
   },
 
 
-  // checkLoss: function(screen) {
-  //   var lastLockedPiece = this.locked[this.locked.length - 1];
-  //   if (lastLockedPiece === undefined) {
-  //     return false;
-  //   } else if (lastLockedPiece[0].currentPositionArray[0][1] < 0) {
-  //
-  //     var gameOver = "images/over.png";
-  //     // gameOver.src = "images/over.png"
-  //     // screen.drawImage(gameOver, 0, 0, 300, 600);
-  //     $('canvas').css("background-image", "url(" + gameOver+ ")");
-  //     // alert("Game Over");
-  //   }
-  // },
+  checkLoss: function(screen, callback) {
+    var lastIndex = 0;
+    var lastLockedPiece = this.locked[this.locked.length - 1];
+    if (lastLockedPiece === undefined || lastLockedPiece[0].currentPositionArray.length === 0) {
+      return false;
+    } else if (lastLockedPiece[0].currentPositionArray[0][1] < 0) {
+      return true;
+    }
+  },
 
   //draw the grid for the background of the game
   grid: function(pixelSize, color, canvas, screen) {
@@ -326,6 +329,13 @@ var blocks = [
       [0, 0, 0, 0],
       [0, 0, 0, 0]
     ],
+    // state2: [
+    //   [0, 1, 0, 0],
+    //   [0, 1, 0, 0],
+    //   [0, 1, 0, 0],
+    //   [0, 1, 0, 0]
+    // ],
+    // states: [state1, state2],
     color: "cyan"
   },
   {

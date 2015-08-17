@@ -1,6 +1,17 @@
 /* add custom styles */
 canvas {
+  position: relative;
+  z-index: -1;
   display: block;
   margin: 50px auto;
   background: grey;
+  background-image: url(/Users/Chuck/gSchool/tetris/images/bg.png);
+}
+
+div {
+  top: 50px;
+  left: 100px;
+  position: absolute;
+  background-color: blue;
+  z-index: 1;
 }
