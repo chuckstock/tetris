@@ -12,6 +12,8 @@ var Game = function(canvasID) {
 
     //added a switch that checks the x position of each block to make sure it is within the width of the canvas
     switch(e.keyCode) {
+
+      //move the current piece left on left arrow key press
       case 37:
       for (var i = 0; i < currentPositionArray.length; i++) {
         if (currentPositionArray[i][0] > 0) {
@@ -22,10 +24,14 @@ var Game = function(canvasID) {
         self.currentPiece.position.x--;
       }
       break;
+
+      //rotate the current piece on up arrow key press
       case 38:
       //rotate the tetrominoes state
 
       break;
+
+      //move the current piece right on right arrow key press
       case 39:
       for (var i = 0; i < currentPositionArray.length; i++) {
         if (currentPositionArray[i][0] + 30 < gameSize.x) {
@@ -36,6 +42,8 @@ var Game = function(canvasID) {
         self.currentPiece.position.x++;
       }
       break;
+
+      //move the current piece down on down arrow key press
       case 40:
       self.currentPiece.position.y++;
       break;
@@ -47,12 +55,16 @@ var Game = function(canvasID) {
   this.currentBlock = this.currentPiece.block;
   this.locked = [];
   this.nextPosition = [];
+  this.fullRows = [];
 
   var self = this;
 
   //function to run the game at 60 FPS
   var tick = function() {
     self.update();
+    self.checkLines(gameSize);
+    self.removeFullLines();
+    // self.checkLoss(screen);
     self.draw(screen);
     self.grid(30, "black", canvas, screen);
     requestAnimationFrame(tick);
@@ -138,7 +150,7 @@ Game.prototype = {
     //draw the tetrominoes that are in the locked array
     if (this.locked.length > 0) {
       for (var j = 0; j < this.locked.length; j++) {
-        for (var k = 0; k < 4; k++) {
+        for (var k = 0; k < this.locked[j][0].currentPositionArray.length; k++) {
           screen.fillStyle = this.locked[j][0].block.color;
           screen.beginPath();
           var sizeX = this.locked[j][0].size.x;
@@ -163,7 +175,7 @@ Game.prototype = {
       var collidingCounter = 0;
       for (var k = 0; k < this.nextPosition.length; k++) {
         for (var i = 0; i < this.locked.length; i++) {
-          for (var j = 0; j < 4; j++) {
+          for (var j = 0; j < this.locked[i][0].currentPositionArray.length; j++) {
             if(colliding(this.nextPosition[k], this.locked[i][0].currentPositionArray[j])) {
               //add one too colliding counter if the colliding function returns true
               collidingCounter++;
@@ -177,6 +189,55 @@ Game.prototype = {
       }
     }
   },
+
+  checkLines: function(gameSize) {
+    if (this.locked.length > 0) {
+      for (var i = 0; i < gameSize.y ; i += 30) {
+        var counter = 0;
+        for (var j = 0; j < this.locked.length; j++) {
+          for (var k = 0; k < this.locked[j][0].currentPositionArray.length; k++) {
+            if (this.locked[j][0].currentPositionArray[k][1] === i) {
+              counter++;
+            }
+          }
+        }
+        if (counter === 10) {
+          this.fullRows.push(i);
+        }
+      }
+    }
+  },
+
+  removeFullLines: function() {
+    for (var i = 0; i < this.locked.length; i++) {
+      for (var j = 0; j < this.fullRows.length; j++) {
+        for (var k = 0; k < this.locked[i][0].currentPositionArray.length; k++) {
+          if (this.locked[i][0].currentPositionArray[k][1] === this.fullRows[j]) {
+            this.locked[i][0].currentPositionArray.splice(k, 1)
+            k--;
+          } else if (this.locked[i][0].currentPositionArray[k][1] < this.fullRows[j]) {
+            this.locked[i][0].currentPositionArray[k][1] += 30
+          }
+        }
+      }
+    }
+    this.fullRows = [];
+  },
+
+
+  // checkLoss: function(screen) {
+  //   var lastLockedPiece = this.locked[this.locked.length - 1];
+  //   if (lastLockedPiece === undefined) {
+  //     return false;
+  //   } else if (lastLockedPiece[0].currentPositionArray[0][1] < 0) {
+  //
+  //     var gameOver = "images/over.png";
+  //     // gameOver.src = "images/over.png"
+  //     // screen.drawImage(gameOver, 0, 0, 300, 600);
+  //     $('canvas').css("background-image", "url(" + gameOver+ ")");
+  //     // alert("Game Over");
+  //   }
+  // },
 
   //draw the grid for the background of the game
   grid: function(pixelSize, color, canvas, screen) {
