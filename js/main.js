@@ -1,6 +1,12 @@
 //Game class constructor that will be used to run the game and pull in data for all aspects of tetris
 var stateNumber = 0;
 var Game = function(canvasID) {
+  //add tetris soundtrack to game and loop it.
+  var audio = new Audio('/Users/Chuck/gSchool/tetris/assets/tetris tone loop.mp3');
+  audio.loop = true;
+  audio.play();
+
+  //save variables that will be used for the canvas
   var canvas = document.getElementById("screen");
   var screen = canvas.getContext("2d");
   var gameSize = { x: canvas.width, y: canvas.height }
@@ -72,13 +78,16 @@ var Game = function(canvasID) {
 
     if (self.checkLoss(screen)) {
       cancelAnimationFrame(tick);
+      audio.pause();
+      var endAudio = new Audio('/Users/Chuck/gSchool/tetris/assets/wah wah sound.mp3');
+      endAudio.play();
       screen.clearRect(0, 0, gameSize.x, gameSize.y)
       var gameOver = "images/over.png";
       $('canvas').css("background-image", "url(" + gameOver + ")");
 
     } else {
       self.draw(screen);
-      self.grid(30, "black", canvas, screen);
+      self.grid(30, "rgb(50, 65, 97)", canvas, screen);
       requestAnimationFrame(tick);
     }
   }
