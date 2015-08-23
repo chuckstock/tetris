@@ -11,6 +11,9 @@ var Game = function(canvasID) {
   var screen = canvas.getContext("2d");
   var gameSize = { x: canvas.width, y: canvas.height }
 
+    ///----------------------------///
+    ///  *** KEYBOARD MOVEMENT *** ///
+    ///----------------------------///
   //addEventListener to window for keypress to move each tetris piece.
   window.addEventListener("keydown", movePiece, false);
   function movePiece(e) {
@@ -99,8 +102,8 @@ var Game = function(canvasID) {
     self.currentPiece.update();
   }
 
-  //intertval to move the tetromino down one space every 750ms
-  setInterval(down, 200);
+  //intertval to move the tetromino down one space every x amount of milliseconds
+  setInterval(down, 400);
   tick();
 }
 
@@ -258,7 +261,7 @@ Game.prototype = {
     }
   },
 
-  //draw the grid for the background of the game
+  //draw the grid for the background of the game and on top of the pieces to show each block for each piece
   grid: function(pixelSize, color, canvas, screen) {
     // screen.clearRect(0, 0, 300, 600);
     screen.save();
@@ -285,212 +288,6 @@ Game.prototype = {
     screen.restore();
   }
 }
-
-//class constructor for each tetromino
-var Tetrominoes = function() {
-  var random = Math.floor(Math.random() * blocks.length);
-  this.block = blocks[random];
-  this.position = {x: 3, y: -4};
-  this.size = {x: 30, y: 30};
-  this.currentPositionArray = [];
-  this.speed = 1;
-  this.stateNumber = 0;
-  this.states = this.block.states;
-  this.currentState = this.block.states[this.stateNumber];
-  this.current = true;
-}
-
-
-Tetrominoes.prototype = {
-  //update the y position of the tetromino for each tick of the game
-  update: function() {
-    this.position.y += this.speed;
-  }
-}
-
-//create a new tetromino and push it into the pieces array for the game
-var createTetromino = function(game) {
-  var newPiece = new Tetrominoes();
-  game.pieces.push(newPiece);
-
-}
-
-//function to check two boddies are colliding will only return true of all 5 of the condition are false
-var colliding = function(b1, b2) {
-  return !(
-    b1 === b2 ||
-    b1[0] + 30 <= b2[0]  ||
-    b1[1] + 30 <= b2[1]  ||
-    b1[0] >= b2[0] + 30  ||
-    b1[1] >= b2[1] + 30
-  );
-};
-
-
-
-
-//all the blocks with their colors and a 4x4 matrix of what they look like
-var blocks = [
-  {
-    name: "O",
-    states: [
-      [
-        [0, 0, 0, 0],
-        [0, 1, 1, 0],
-        [0, 1, 1, 0],
-        [0, 0, 0, 0]
-      ]
-    ],
-    color: "yellow"
-  },
-  {
-    name: "I",
-    states: [
-      [
-        [0, 0, 0, 0],
-        [1, 1, 1, 1],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0]
-      ],
-      [
-        [0, 1, 0, 0],
-        [0, 1, 0, 0],
-        [0, 1, 0, 0],
-        [0, 1, 0, 0]
-      ]
-    ],
-    color: "cyan"
-  },
-  {
-    name: "T",
-    states: [
-      [
-        [0, 0, 0, 0],
-        [1, 1, 1, 0],
-        [0, 1, 0, 0],
-        [0, 0, 0, 0]
-      ],
-      [
-        [0, 1, 0, 0],
-        [1, 1, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 0, 0]
-      ],
-      [
-        [0, 1, 0, 0],
-        [1, 1, 1, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0]
-      ],
-      [
-        [0, 1, 0, 0],
-        [0, 1, 1, 0],
-        [0, 1, 0, 0],
-        [0, 0, 0, 0]
-      ]
-    ],
-    color: "purple"
-  },
-  {
-    name: "S",
-    states: [
-      [
-        [0, 0, 0, 0],
-        [0, 1, 1, 0],
-        [1, 1, 0, 0],
-        [0, 0, 0, 0]
-      ],
-      [
-        [0, 1, 0, 0],
-        [0, 1, 1, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 0]
-      ]
-    ],
-    color: "green"
-  },
-  {
-    name: "Z",
-    states: [
-      [
-        [0, 0, 0, 0],
-        [1, 1, 0, 0],
-        [0, 1, 1, 0],
-        [0, 0, 0, 0]
-      ],
-      [
-        [0, 1, 0, 0],
-        [1, 1, 0, 0],
-        [1, 0, 0, 0],
-        [0, 0, 0, 0]
-      ]
-    ],
-    color: "red"
-  },
-  {
-    name: "J",
-    states: [
-      [
-        [0, 0, 1, 0],
-        [0, 0, 1, 0],
-        [0, 1, 1, 0],
-        [0, 0, 0, 0]
-      ],
-      [
-        [0, 0, 0, 0],
-        [1, 0, 0, 0],
-        [1, 1, 1, 0],
-        [0, 0, 0, 0]
-      ],
-      [
-        [1, 1, 0, 0],
-        [1, 0, 0, 0],
-        [1, 0, 0, 0],
-        [0, 0, 0, 0]
-      ],
-      [
-        [1, 1, 1, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0]
-      ]
-    ],
-    color: "blue"
-  },
-  {
-    name: "L",
-    states:[
-      [
-        [0, 1, 0, 0],
-        [0, 1, 0, 0],
-        [0, 1, 1, 0],
-        [0, 0, 0, 0]
-      ],
-      [
-        [0, 1, 1, 1],
-        [0, 1, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0]
-      ],
-      [
-        [0, 0, 1, 1],
-        [0, 0, 0, 1],
-        [0, 0, 0, 1],
-        [0, 0, 0, 0]
-      ],
-      [
-        [0, 0, 0, 0],
-        [0, 0, 0, 1],
-        [0, 1, 1, 1],
-        [0, 0, 0, 0]
-      ]
-    ],
-    color: "orange"
-  },
-]
-
-
-
 
 window.onload = function() {
   new Game("screen");
