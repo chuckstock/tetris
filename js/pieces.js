@@ -20,6 +20,11 @@ Tetrominoes.prototype = {
   }
 };
 
+
+///------------------------///
+///  *** TETRIS BLOCKS *** ///
+///------------------------///
+
 //all the blocks with their colors and a 4x4 matrix of what they look like
 var blocks = [
   {

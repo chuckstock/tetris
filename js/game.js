@@ -9,7 +9,7 @@ var Game = function(canvasID) {
   //save variables that will be used for the canvas
   var canvas = document.getElementById("screen");
   var screen = canvas.getContext("2d");
-  var gameSize = { x: canvas.width, y: canvas.height }
+  var gameSize = { x: canvas.width, y: canvas.height };
 
     ///----------------------------///
     ///  *** KEYBOARD MOVEMENT *** ///
@@ -17,7 +17,7 @@ var Game = function(canvasID) {
   //addEventListener to window for keypress to move each tetris piece.
   window.addEventListener("keydown", movePiece, false);
   function movePiece(e) {
-    var currentPositionArray = self.currentPiece.currentPositionArray
+    var currentPositionArray = self.currentPiece.currentPositionArray;
     var counter = 0;
 
     //added a switch that checks the x position of each block to make sure it is within the width of the canvas
@@ -46,8 +46,8 @@ var Game = function(canvasID) {
 
       //move the current piece right on right arrow key press
       case 39:
-      for (var i = 0; i < currentPositionArray.length; i++) {
-        if (currentPositionArray[i][0] + 30 < gameSize.x) {
+      for (var j = 0; j < currentPositionArray.length; j++) {
+        if (currentPositionArray[j][0] + 30 < gameSize.x) {
           counter++;
         }
       }
@@ -84,7 +84,7 @@ var Game = function(canvasID) {
       audio.pause();
       var endAudio = new Audio('/Users/Chuck/gSchool/tetris/assets/wah wah sound.mp3');
       endAudio.play();
-      screen.clearRect(0, 0, gameSize.x, gameSize.y)
+      screen.clearRect(0, 0, gameSize.x, gameSize.y);
       var gameOver = "images/over.png";
       $('canvas').css("background-image", "url(" + gameOver + ")");
 
@@ -93,19 +93,24 @@ var Game = function(canvasID) {
       self.grid(30, "rgb(50, 65, 97)", canvas, screen);
       requestAnimationFrame(tick);
     }
-  }
+  };
 
   //function to move tetromino down at a consistent pace.
   var down = function () {
     self.checkLines(gameSize);
     self.removeFullLines();
     self.currentPiece.update();
-  }
+  };
 
   //intertval to move the tetromino down one space every x amount of milliseconds
   setInterval(down, 400);
   tick();
-}
+};
+
+
+///--------------------------///
+///  *** GAME PROTOTYPES *** ///
+///--------------------------///
 
 Game.prototype = {
   update: function() {
@@ -120,9 +125,6 @@ Game.prototype = {
     var state = this.currentPiece.states[stateNumber];
     var sizeX = this.currentPiece.size.x;
     var sizeY = this.currentPiece.size.y;
-
-    //update the block to redraw it as it moves down the frame
-    // this.currentPiece.update();
 
     //update nextPosition blocks
     for (var r = 0; r < state.length; r++) {
@@ -139,12 +141,11 @@ Game.prototype = {
     if (this.currentPiece.currentPositionArray.length === 0) {
       this.currentPiece.currentPositionArray = this.nextPosition;
 
-      //check to see if the next position array is colliding with the floor or any locked pieces.
-      //if checkcollision returns true. then lock the speed and push the current piece into the locked piece array.
+      //check to see if the next position array is colliding with the floor or any locked pieces. If checkcollision returns true. then lock the speed and push the current piece into the locked piece array.
     } else if (this.checkCollision()) {
       this.currentPiece.speed = 0;
       this.currentPiece.current = false;
-      this.locked.push([this.currentPiece])
+      this.locked.push([this.currentPiece]);
       stateNumber = 0;
       createTetromino(this);
     } else {
@@ -192,9 +193,9 @@ Game.prototype = {
   },
 
   checkCollision: function() {
-    if (this.nextPosition[3][3] > 600) {
       //check for collision with bottom of frame
       //only need to check the the y position of the last block in nextPosition
+    if (this.nextPosition[3][3] > 600) {
       return true;
     } else {
       //check the nextposition array to see if any of the blocks of the current piece are colliding with any pieces in the locked array.
@@ -216,6 +217,7 @@ Game.prototype = {
     }
   },
 
+  //check to see if there are any rows that are filled
   checkLines: function(gameSize) {
     if (this.locked.length > 0) {
       for (var i = 0; i < gameSize.y ; i += 30) {
@@ -234,15 +236,16 @@ Game.prototype = {
     }
   },
 
+  //if a line is filled then remove the squares from that line and shift all the sqares above, down one line
   removeFullLines: function() {
     for (var i = 0; i < this.locked.length; i++) {
       for (var j = 0; j < this.fullRows.length; j++) {
         for (var k = 0; k < this.locked[i][0].currentPositionArray.length; k++) {
           if (this.locked[i][0].currentPositionArray[k][1] === this.fullRows[j]) {
-            this.locked[i][0].currentPositionArray.splice(k, 1)
+            this.locked[i][0].currentPositionArray.splice(k, 1);
             k--;
           } else if (this.locked[i][0].currentPositionArray[k][1] < this.fullRows[j]) {
-            this.locked[i][0].currentPositionArray[k][1] += 30
+            this.locked[i][0].currentPositionArray[k][1] += 30;
           }
         }
       }
@@ -251,6 +254,7 @@ Game.prototype = {
   },
 
 
+  //if the last locked piece is above the top of the canvas than the player loses
   checkLoss: function(screen, callback) {
     var lastIndex = 0;
     var lastLockedPiece = this.locked[this.locked.length - 1];
@@ -287,8 +291,8 @@ Game.prototype = {
     }
     screen.restore();
   }
-}
+};
 
 window.onload = function() {
   new Game("screen");
-}
+};
