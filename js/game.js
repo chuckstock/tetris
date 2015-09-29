@@ -2,7 +2,7 @@
 var stateNumber = 0;
 var Game = function(canvasID) {
   //add tetris soundtrack to game and loop it.
-  var audio = new Audio('../assets/tetrisToneLoop.mp3');
+  var audio = new Audio('http://picosong.com/S99V');
   audio.loop = true;
   audio.play();
 
