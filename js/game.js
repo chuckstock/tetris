@@ -2,7 +2,7 @@
 var stateNumber = 0;
 var Game = function(canvasID) {
   //add tetris soundtrack to game and loop it.
-  var audio = new Audio('/Users/Chuck/gSchool/tetris/assets/tetris tone loop.mp3');
+  var audio = new Audio('../assets/tetris tone loop.mp3');
   audio.loop = true;
   audio.play();
 
@@ -85,7 +85,7 @@ var Game = function(canvasID) {
       var endAudio = new Audio('/Users/Chuck/gSchool/tetris/assets/wah wah sound.mp3');
       endAudio.play();
       screen.clearRect(0, 0, gameSize.x, gameSize.y);
-      var gameOver = "images/over.png";
+      var gameOver = "../images/over.png";
       $('canvas').css("background-image", "url(" + gameOver + ")");
 
     } else {
