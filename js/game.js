@@ -82,11 +82,10 @@ var Game = function(canvasID) {
     if (self.checkLoss(screen)) {
       cancelAnimationFrame(tick);
       audio.pause();
-      var endAudio = new Audio('/Users/Chuck/gSchool/tetris/assets/wah wah sound.mp3');
+      var endAudio = new Audio('../assets/wahWahSound.mp3');
       endAudio.play();
       screen.clearRect(0, 0, gameSize.x, gameSize.y);
-      var gameOver = "../images/over.png";
-      $('canvas').css("background-image", "url(" + gameOver + ")");
+      $('canvas').css("background-image", "url(../images/over.png)");
 
     } else {
       self.draw(screen);
