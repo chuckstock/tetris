@@ -3,8 +3,9 @@ var stateNumber = 0
 var Game = function (canvasID) {
   //add tetris soundtrack to game and loop it.
   // var audio = new Audio('../assets/tetristoneloop.mp3');
-  var audio = document.createElement('audio')
-  audio.setAttribute('href', '../assets/tetristoneloop.mp3')
+  var audio = new Audio('./assets/soundtrack.mp3')
+  audio.loop = true
+  audio.play()
 
   //save variables that will be used for the canvas
   var canvas = document.getElementById('screen')
@@ -19,10 +20,6 @@ var Game = function (canvasID) {
   function movePiece(e) {
     var currentPositionArray = self.currentPiece.currentPositionArray
     var counter = 0
-
-    console.log('audio')
-    audio.loop = true
-    audio.play()
 
     //added a switch that checks the x position of each block to make sure it is within the width of the canvas
     switch (e.keyCode) {
@@ -176,7 +173,11 @@ Game.prototype = {
     //draw the tetrominoes that are in the locked array
     if (this.locked.length > 0) {
       for (var j = 0; j < this.locked.length; j++) {
-        for (var k = 0; k < this.locked[j][0].currentPositionArray.length; k++) {
+        for (
+          var k = 0;
+          k < this.locked[j][0].currentPositionArray.length;
+          k++
+        ) {
           screen.fillStyle = this.locked[j][0].block.color
           screen.beginPath()
           var sizeX = this.locked[j][0].size.x
@@ -201,8 +202,17 @@ Game.prototype = {
       var collidingCounter = 0
       for (var k = 0; k < this.nextPosition.length; k++) {
         for (var i = 0; i < this.locked.length; i++) {
-          for (var j = 0; j < this.locked[i][0].currentPositionArray.length; j++) {
-            if (colliding(this.nextPosition[k], this.locked[i][0].currentPositionArray[j])) {
+          for (
+            var j = 0;
+            j < this.locked[i][0].currentPositionArray.length;
+            j++
+          ) {
+            if (
+              colliding(
+                this.nextPosition[k],
+                this.locked[i][0].currentPositionArray[j]
+              )
+            ) {
               //add one too colliding counter if the colliding function returns true
               collidingCounter++
             }
@@ -222,7 +232,11 @@ Game.prototype = {
       for (var i = 0; i < gameSize.y; i += 30) {
         var counter = 0
         for (var j = 0; j < this.locked.length; j++) {
-          for (var k = 0; k < this.locked[j][0].currentPositionArray.length; k++) {
+          for (
+            var k = 0;
+            k < this.locked[j][0].currentPositionArray.length;
+            k++
+          ) {
             if (this.locked[j][0].currentPositionArray[k][1] === i) {
               counter++
             }
@@ -239,11 +253,19 @@ Game.prototype = {
   removeFullLines: function () {
     for (var i = 0; i < this.locked.length; i++) {
       for (var j = 0; j < this.fullRows.length; j++) {
-        for (var k = 0; k < this.locked[i][0].currentPositionArray.length; k++) {
-          if (this.locked[i][0].currentPositionArray[k][1] === this.fullRows[j]) {
+        for (
+          var k = 0;
+          k < this.locked[i][0].currentPositionArray.length;
+          k++
+        ) {
+          if (
+            this.locked[i][0].currentPositionArray[k][1] === this.fullRows[j]
+          ) {
             this.locked[i][0].currentPositionArray.splice(k, 1)
             k--
-          } else if (this.locked[i][0].currentPositionArray[k][1] < this.fullRows[j]) {
+          } else if (
+            this.locked[i][0].currentPositionArray[k][1] < this.fullRows[j]
+          ) {
             this.locked[i][0].currentPositionArray[k][1] += 30
           }
         }
@@ -256,7 +278,10 @@ Game.prototype = {
   checkLoss: function (screen, callback) {
     var lastIndex = 0
     var lastLockedPiece = this.locked[this.locked.length - 1]
-    if (lastLockedPiece === undefined || lastLockedPiece[0].currentPositionArray.length === 0) {
+    if (
+      lastLockedPiece === undefined ||
+      lastLockedPiece[0].currentPositionArray.length === 0
+    ) {
       return false
     } else if (lastLockedPiece[0].currentPositionArray[0][1] < 0) {
       return true
@@ -292,5 +317,9 @@ Game.prototype = {
 }
 
 window.onload = function () {
-  new Game('screen')
+  const btn = document.querySelector('button')
+  btn.addEventListener('click', () => {
+    new Game('screen')
+    btn.style.display = 'none'
+  })
 }
